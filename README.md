@@ -1,123 +1,141 @@
-# Ochrona Bot – zdalne zarządzanie komputerem Windows przez Discord
+# Protection Bot – Remote Windows PC Control via Discord
 
-Prywatny bot Discord, który pozwala **zdalnie pilnować i obsługiwać własny komputer Windows**, gdy jesteś poza domem.
+A private Discord bot that lets you **remotely monitor and control your own Windows PC** when you are away from home (work, vacation, etc.).
 
-Możesz m.in.:
-- zobaczyć zrzut ekranu albo obraz z kamerki
-- pobrać plik z komputera na telefon
-- sprawdzić, co jest uruchomione
-- zablokować / wyłączyć / zrestartować PC
-- włączyć automatyczny start bota razem z Windows
+The bot runs on your computer and connects to Discord. You type commands from your phone or another device, and the bot executes them on your PC.
 
-> ⚠️ **Tylko do własnego komputera.**  
-> Bot ma dużą kontrolę nad systemem. Nie dawaj tokena ani dostępu innym osobom.
+### What you can do
+- View a **screenshot** or a **webcam** photo
+- **Download a file** from your PC to your phone
+- Check **processes**, open windows, CPU/RAM usage
+- **Lock**, shut down, or restart the computer
+- Record short audio from the microphone or video from the camera
+- Enable **automatic startup** with Windows
 
----
-
-## Spis treści
-
-1. [Co robi bot – lista komend](#1-co-robi-bot--lista-komend)
-2. [Czego potrzebujesz](#2-czego-potrzebujesz)
-3. [Krok po kroku – instalacja](#3-krok-po-kroku--instalacja)
-4. [Uruchomienie bota](#4-uruchomienie-bota)
-5. [Opcjonalnie: plik .exe](#5-opcjonalnie-plik-exe)
-6. [Auto-start z Windows](#6-auto-start-z-windows)
-7. [Bezpieczeństwo](#7-bezpieczeństwo)
-8. [Problemy i rozwiązania](#8-problemy-i-rozwiązania)
+> ⚠️ **For your own computer only.**  
+> This bot has significant system control. Never share the bot token or server access with others.  
+> Using such tools on someone else’s device without permission is illegal.
 
 ---
 
-## 1. Co robi bot – lista komend
+## Table of contents
 
-Prefix komend: **`.`** (kropka)
-
-### Podstawowe
-| Komenda | Do czego służy |
-|---------|----------------|
-| `.help` | Pokazuje listę komend |
-| `.status` | Pokazuje obciążenie CPU, RAM, dysku i czas od włączenia PC |
-| `.switch` | Pokazuje listę monitorów |
-| `.switch 0` | Ustawia pierwszy monitor do zrzutów |
-| `.switch 1` | Ustawia drugi monitor do zrzutów |
-
-### System i pliki
-| Komenda | Do czego służy |
-|---------|----------------|
-| `.cmd <komenda>` | Uruchamia komendę systemową Windows |
-| `.ls [ścieżka]` | Pokazuje pliki i foldery (działa też ze spacjami w nazwie) |
-| `.download <ścieżka>` | Pobiera plik z komputera i wysyła na Discorda (limit ok. 24 MB) |
-| `.upload` | Zapisuje plik wysłany na Discordzie na dysk komputera |
-| `.procs` | Lista procesów zużywających najwięcej RAM |
-| `.windows` | Lista otwartych okien |
-| `.kill <nazwa>` | Zamyka proces (np. `.kill chrome`) |
-| `.clipboard` | Pokazuje tekst ze schowka |
-
-### Podgląd ekranu / kamery / mikrofonu
-| Komenda | Do czego służy |
-|---------|----------------|
-| `.ss` | Zrzut ekranu |
-| `.sslive on` | Co 3 sekundy wysyła nowy zrzut |
-| `.sslive off` | Wyłącza ciągłe zrzuty |
-| `.webcam` | Robi zdjęcie z kamerki |
-| `.camrec 5` | Nagrywa 5 sekund wideo z kamerki (max 12 s) |
-| `.mic 5` | Nagrywa 5 sekund dźwięku z mikrofonu (max 15 s) |
-| `.choosemic` | Pokazuje listę mikrofonów |
-| `.choosemic 2` | Wybiera mikrofon nr 2 |
-
-### Dźwięk
-| Komenda | Do czego służy |
-|---------|----------------|
-| `.soundplay` | Odtwarza załączony plik MP3/WAV na komputerze |
-| `.soundstop` | Stopuje odtwarzanie |
-| `.volume 50` | Ustawia głośność (0–100) |
-| `.volup` | Zwiększa głośność |
-| `.voldown` | Zmniejsza głośność |
-| `.mute` | Wycisza / odcina wyciszenie |
-
-### Zasilanie
-| Komenda | Do czego służy |
-|---------|----------------|
-| `.lock` | Blokuje komputer |
-| `.shutdown` | Wyłącza komputer za 10 sekund |
-| `.restart` | Restartuje komputer za 10 sekund |
-| `.battery` | Pokazuje poziom baterii (laptop) |
-
-### Inne
-| Komenda | Do czego służy |
-|---------|----------------|
-| `.open google.com` | Otwiera stronę w przeglądarce |
-| `.notify cześć` | Pokazuje powiadomienie Windows |
-| `.join` | Lista kanałów głosowych |
-| `.join ogólny` | Bot wchodzi na kanał głosowy |
-| `.leave` | Bot wychodzi z kanału głosowego |
-| `.autoon` | Bot będzie startował razem z Windows |
-| `.autooff` | Wyłącza auto-start |
-| `.autostatus` | Sprawdza, czy auto-start jest włączony |
-| `.destroy` | Całkowicie wyłącza bota |
+1. [Command list – what each one does](#1-command-list--what-each-one-does)
+2. [What you need](#2-what-you-need)
+3. [Step-by-step installation](#3-step-by-step-installation)
+4. [Running the bot](#4-running-the-bot)
+5. [Building an .exe file](#5-building-an-exe-file)
+6. [Windows autostart](#6-windows-autostart)
+7. [Security](#7-security)
+8. [Troubleshooting](#8-troubleshooting)
+9. [Usage examples](#9-usage-examples)
 
 ---
 
-## 2. Czego potrzebujesz
+## 1. Command list – what each one does
 
-- Komputer z **Windows 10/11**
-- Konto **Discord**
-- **Python** (darmowy)
-- Program do edycji kodu (polecane: **Visual Studio Code**)
-- Plik `ochrona.py` (kod bota)
+All commands start with a dot: **`.`**  
+They work **only for you** (your Discord user ID is checked).
+
+### Basic
+
+| Command | What it does |
+|---------|----------------|
+| `.help` | Shows a short command list on Discord |
+| `.status` | CPU, RAM, C: drive, PC name, uptime |
+| `.switch` | Lists connected monitors |
+| `.switch 0` | Selects monitor 0 (usually primary) for screenshots |
+| `.switch 1` | Selects monitor 1 (second screen) for screenshots |
+
+### System and files
+
+| Command | What it does |
+|---------|----------------|
+| `.cmd <command>` | Runs a Windows system command (e.g. `.cmd ipconfig`) |
+| `.ls [path]` | Lists files and folders (works with spaces in names) |
+| `.download <path>` | Downloads a file from the PC to Discord (limit ~24 MB) |
+| `.upload` | Attach a file on Discord → bot saves it to disk |
+| `.procs` | Top processes by RAM usage |
+| `.windows` | List of open window titles |
+| `.kill <name>` | Closes a process (e.g. `.kill chrome`) |
+| `.clipboard` | Shows current clipboard text (Ctrl+C content) |
+
+### Screen / camera / microphone
+
+| Command | What it does |
+|---------|----------------|
+| `.ss` | Single screenshot (selected monitor) |
+| `.sslive on` | Sends a new screenshot every 3 seconds |
+| `.sslive off` | Stops continuous screenshots |
+| `.webcam` | Single photo from the webcam |
+| `.camrec 5` | Records camera video (default 5 s, max 12 s) |
+| `.mic 5` | Records microphone audio (default 5 s, max 15 s) |
+| `.choosemic` | Lists available microphones |
+| `.choosemic 2` | Selects microphone number 2 for recording |
+
+### Audio
+
+| Command | What it does |
+|---------|----------------|
+| `.soundplay` | Plays an attached MP3/WAV/OGG file on the PC speakers |
+| `.soundstop` | Stops playback |
+| `.volume 50` | Sets system volume (0–100, approximate) |
+| `.volup` | Increases volume |
+| `.voldown` | Decreases volume |
+| `.mute` | Toggles system mute |
+
+### Power
+
+| Command | What it does |
+|---------|----------------|
+| `.lock` | Locks the computer (Windows lock screen) |
+| `.shutdown` | Shuts down the PC in 10 seconds |
+| `.restart` | Restarts the PC in 10 seconds |
+| `.battery` | Shows battery level (laptops) |
+
+### Other
+
+| Command | What it does |
+|---------|----------------|
+| `.open google.com` | Opens a website in the default browser |
+| `.notify text` | Shows a Windows notification |
+| `.join` | Lists voice channels on the server |
+| `.join general` | Bot joins the voice channel with that name |
+| `.leave` | Bot leaves the voice channel |
+| `.autoon` | Enables bot startup with Windows |
+| `.autooff` | Disables autostart |
+| `.autostatus` | Checks whether autostart is enabled |
+| `.destroy` | Immediately stops the bot process |
 
 ---
 
-## 3. Krok po kroku – instalacja
+## 2. What you need
 
-### Krok A – Zainstaluj Python
+| Item | Why |
+|------|-----|
+| **Windows 10 or 11** | The bot is built for Windows |
+| **Discord account** | To create the bot and send commands |
+| **Python 3.10+** | Language the script runs on |
+| **Visual Studio Code** (or another editor) | To paste and edit the code |
+| **`ochrona.py` file** | The bot source code |
+| **Your own Discord server** (preferably private) | Where the bot will run |
 
-1. Wejdź na stronę: https://www.python.org/downloads/
-2. Kliknij żółty przycisk **Download Python**
-3. Uruchom pobrany instalator
-4. Na dole okna **zaznacz koniecznie**:
+---
+
+## 3. Step-by-step installation
+
+### Step A – Install Python
+
+1. Go to: [https://www.python.org/downloads/](https://www.python.org/downloads/)
+2. Click the big yellow **Download Python 3.x.x** button
+3. Run the installer
+4. **On the first screen, check at the bottom:**
    - ✅ **Add python.exe to PATH**
-5. Kliknij **Install Now**
-6. Po instalacji otwórz **PowerShell** (Start → wpisz `PowerShell`) i wpisz:
+5. Click **Install Now** and wait until it finishes
+6. Close the installer
+7. Open **PowerShell**:
+   - Press the Windows key → type `powershell` → Enter
+8. Run:
 
 ```powershell
 python --version
